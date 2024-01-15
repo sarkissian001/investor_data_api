@@ -14,8 +14,8 @@ This React Single Page Application (SPA) interfaces with the Preqin API to displ
 To get started with the app, clone the repository and install the dependencies.
 
 ```bash
-git clone https://your-repository-url.git
-cd your-repository-folder
+git clone https://github.com/sarkissian001/investor_data_api.git
+cd preqin-frontend
 npm install
 ```
 
