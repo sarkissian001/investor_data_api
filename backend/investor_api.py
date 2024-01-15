@@ -2,13 +2,11 @@ from fastapi import FastAPI, Depends, HTTPException, Query, Form
 from fastapi.security.oauth2 import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
-from fastapi.responses import JSONResponse
 
 
 app = FastAPI()
 
 BASE_API_URL = "https://api.preqin.com/api"
-REFRESH_TOKENS = {}
 
 # OAuth2 configuration
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
@@ -41,34 +39,7 @@ async def get_access_token(username: str = Form(...), apikey: str = Form(...)):
         )
         if response.status_code == 200:
             token_data = response.json()
-            access_token = token_data.get("access_token")
-            refresh_token = token_data.get("refresh_token")
-            if access_token:
-                REFRESH_TOKENS[access_token] = refresh_token
-                return token_data
-
-    raise HTTPException(status_code=401, detail="Unauthorized")
-
-
-@app.post("/refresh_token")
-async def refresh_access_token(refresh_token: str = Form(...)):
-    data = {
-        "grant_type": "refresh_token",
-        "refresh_token": refresh_token,
-    }
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            AUTH_REFRESH_TOKEN_URL,
-            data=data,
-        )
-
-        if response.status_code == 200:
-            token_data = response.json()
-            access_token = token_data.get("access_token")
-            if access_token:
-                # Store the new access token in memory (you should use a more secure storage)
-                REFRESH_TOKENS[access_token] = refresh_token
-                return token_data
+            return token_data
 
     raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -85,7 +56,7 @@ async def fetch_investor_data(firm_id, access_token):
         else:
             return {"error": f"Failed to fetch investor data for FirmId {firm_id}"}
 
-
+        
 @app.get("/api/Investor")
 async def get_investor_by_id(FirmID: str, access_token: str = Depends(oauth2_scheme)):
     investor_data = await fetch_investor_data(FirmID, access_token)
